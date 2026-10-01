@@ -156,3 +156,164 @@ function bresenhamLineToImageData(imageData, x0, y0, x1, y1, rgba = [0, 0, 0, 25
         if (e2 <  dx) { err += dx; y0 += sy; }
     }
 }
+
+    /**
+ * Рисует окружность по алгоритму Брезенхема.
+ *
+ * Использует симметрию: вычисляется только 1/8 окружности,
+ * остальные точки получаются отражением.
+ *
+ * @param {CanvasRenderingContext2D} ctx  Контекст рисования Canvas 2D.
+ * @param {number} xc                     Координата X центра.
+ * @param {number} yc                     Координата Y центра.
+ * @param {number} r                      Радиус (целое число ≥ 0).
+ * @param {string} [color='#000000']      Цвет линии.
+ */
+function bresenhamCircle(ctx, xc, yc, r, color = '#000000') {
+    xc = Math.round(xc);
+    yc = Math.round(yc);
+    r  = Math.round(r);
+
+    if (r < 0) return;
+
+    ctx.save();
+    ctx.fillStyle = color;
+
+    // Вспомогательная функция: рисует 8 симметричных точек
+    const plot8 = (x, y) => {
+        ctx.fillRect(xc + x, yc + y, 1, 1);
+        ctx.fillRect(xc - x, yc + y, 1, 1);
+        ctx.fillRect(xc + x, yc - y, 1, 1);
+        ctx.fillRect(xc - x, yc - y, 1, 1);
+        ctx.fillRect(xc + y, yc + x, 1, 1);
+        ctx.fillRect(xc - y, yc + x, 1, 1);
+        ctx.fillRect(xc + y, yc - x, 1, 1);
+        ctx.fillRect(xc - y, yc - x, 1, 1);
+    };
+
+    let x = 0;
+    let y = r;
+    let d = 3 - 2 * r;
+
+    while (x <= y) {
+        plot8(x, y);
+
+        if (d < 0) {
+            d += 4 * x + 6;
+        } else {
+            d += 4 * (x - y) + 10;
+            y -= 1;
+        }
+        x += 1;
+    }
+
+    ctx.restore();
+}
+
+/**
+ * Возвращает массив пикселей [x, y] окружности Брезенхема.
+ * Полезно для статистики или рисования нестандартным способом.
+ *
+ * @param {number} xc  Координата X центра.
+ * @param {number} yc  Координата Y центра.
+ * @param {number} r   Радиус.
+ * @returns {Array<[number, number]>} Массив уникальных пикселей.
+ */
+function bresenhamCirclePixels(xc, yc, r) {
+    xc = Math.round(xc);
+    yc = Math.round(yc);
+    r  = Math.round(r);
+
+    const seen = new Set();
+    const pixels = [];
+
+    const add = (x, y) => {
+        const key = x + ',' + y;
+        if (!seen.has(key)) {
+            seen.add(key);
+            pixels.push([x, y]);
+        }
+    };
+
+    const plot8 = (x, y) => {
+        add(xc + x, yc + y);
+        add(xc - x, yc + y);
+        add(xc + x, yc - y);
+        add(xc - x, yc - y);
+        add(xc + y, yc + x);
+        add(xc - y, yc + x);
+        add(xc + y, yc - x);
+        add(xc - y, yc - x);
+    };
+
+    let x = 0;
+    let y = r;
+    let d = 3 - 2 * r;
+
+    while (x <= y) {
+        plot8(x, y);
+        if (d < 0) {
+            d += 4 * x + 6;
+        } else {
+            d += 4 * (x - y) + 10;
+            y -= 1;
+        }
+        x += 1;
+    }
+
+    return pixels;
+}
+
+/**
+ * Рисует окружность Брезенхема напрямую в ImageData.
+ *
+ * @param {ImageData} imageData         Объект ImageData.
+ * @param {number} xc                   Координата X центра.
+ * @param {number} yc                   Координата Y центра.
+ * @param {number} r                    Радиус.
+ * @param {number[]} [rgba=[0,0,0,255]] Цвет в формате [R, G, B, A].
+ */
+function bresenhamCircleToImageData(imageData, xc, yc, r, rgba = [0, 0, 0, 255]) {
+    const { width, height, data } = imageData;
+    const [rr, gg, bb, aa] = rgba;
+
+    xc = Math.round(xc);
+    yc = Math.round(yc);
+    r  = Math.round(r);
+
+    const put = (x, y) => {
+        if (x >= 0 && y >= 0 && x < width && y < height) {
+            const i = (y * width + x) * 4;
+            data[i]     = rr;
+            data[i + 1] = gg;
+            data[i + 2] = bb;
+            data[i + 3] = aa;
+        }
+    };
+
+    const plot8 = (x, y) => {
+        put(xc + x, yc + y);
+        put(xc - x, yc + y);
+        put(xc + x, yc - y);
+        put(xc - x, yc - y);
+        put(xc + y, yc + x);
+        put(xc - y, yc + x);
+        put(xc + y, yc - x);
+        put(xc - y, yc - x);
+    };
+
+    let x = 0;
+    let y = r;
+    let d = 3 - 2 * r;
+
+    while (x <= y) {
+        plot8(x, y);
+        if (d < 0) {
+            d += 4 * x + 6;
+        } else {
+            d += 4 * (x - y) + 10;
+            y -= 1;
+        }
+        x += 1;
+    }
+}

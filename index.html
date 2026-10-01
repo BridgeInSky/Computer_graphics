@@ -61,7 +61,7 @@
         }
 
         .controls {
-            width: 280px;
+            width: 300px;
             display: flex;
             flex-direction: column;
             gap: 14px;
@@ -73,6 +73,33 @@
             color: #374151;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .tabs button {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            font-size: 14px;
+            font-weight: 500;
+            color: #4b5563;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .tabs button.active {
+            background: #fff;
+            color: #111827;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         }
 
         .field {
@@ -159,14 +186,16 @@
         }
 
         .info strong { color: #111827; }
+
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <script src="bresenham.js"></script>
-
     <h1>Алгоритм Брезенхема</h1>
-    <p class="subtitle">Кликните по холсту, чтобы задать конец отрезка. Начало — красная точка.</p>
+    <p class="subtitle">
+        Переключайтесь между отрезком и окружностью. Клик по холсту задаёт конечную точку / радиус.
+    </p>
 
     <div class="layout">
 
@@ -177,39 +206,61 @@
 
         <!-- Панель управления -->
         <div class="panel controls">
-            <h2>Параметры</h2>
 
-            <div class="row">
-                <div class="field">
-                    <label for="x0">X₀</label>
-                    <input type="number" id="x0" value="50" min="0">
+            <!-- Вкладки -->
+            <div class="tabs">
+                <button id="tabLine" class="active">Отрезок</button>
+                <button id="tabCircle">Окружность</button>
+            </div>
+
+            <!-- Форма отрезка -->
+            <div id="formLine">
+                <h2>Отрезок</h2>
+                <div class="row">
+                    <div class="field">
+                        <label for="x0">X₀</label>
+                        <input type="number" id="x0" value="80" min="0">
+                    </div>
+                    <div class="field">
+                        <label for="y0">Y₀</label>
+                        <input type="number" id="y0" value="80" min="0">
+                    </div>
                 </div>
-                <div class="field">
-                    <label for="y0">Y₀</label>
-                    <input type="number" id="y0" value="50" min="0">
+                <div class="row">
+                    <div class="field">
+                        <label for="x1">X₁</label>
+                        <input type="number" id="x1" value="520" min="0">
+                    </div>
+                    <div class="field">
+                        <label for="y1">Y₁</label>
+                        <input type="number" id="y1" value="480" min="0">
+                    </div>
                 </div>
             </div>
 
-            <div class="row">
-                <div class="field">
-                    <label for="x1">X₁</label>
-                    <input type="number" id="x1" value="550" min="0">
+            <!-- Форма окружности -->
+            <div id="formCircle" class="hidden">
+                <h2>Окружность</h2>
+                <div class="row">
+                    <div class="field">
+                        <label for="cx">X центра</label>
+                        <input type="number" id="cx" value="300" min="0">
+                    </div>
+                    <div class="field">
+                        <label for="cy">Y центра</label>
+                        <input type="number" id="cy" value="300" min="0">
+                    </div>
                 </div>
                 <div class="field">
-                    <label for="y1">Y₁</label>
-                    <input type="number" id="y1" value="400" min="0">
+                    <label for="radius">Радиус</label>
+                    <input type="number" id="radius" value="200" min="0">
                 </div>
             </div>
 
             <div class="field">
-                <label for="color">Цвет линии</label>
+                <label for="color">Цвет</label>
                 <input type="color" id="color" value="#2563eb">
             </div>
-
-            <label class="checkbox">
-                <input type="checkbox" id="showPixels" checked>
-                Показывать отдельные пиксели
-            </label>
 
             <label class="checkbox">
                 <input type="checkbox" id="showGrid">
@@ -218,7 +269,7 @@
 
             <label class="checkbox">
                 <input type="checkbox" id="showReference" checked>
-                Показывать «идеальную» линию (canvas lineTo)
+                Показывать «идеальную» фигуру (canvas)
             </label>
 
             <div class="row">
@@ -227,32 +278,41 @@
             </div>
 
             <div class="info" id="stats">
-                <strong>Пикселей:</strong> —<br>
-                <strong>Шагов:</strong> —
+                <strong>Пикселей:</strong> —
             </div>
 
-            <div class="hint">
-                Холст: 600×600 px. Координаты задаются в пикселях.
-                Клик по холсту задаёт конечную точку (X₁, Y₁).
+            <div class="hint" id="hint">
+                Левый клик по холсту — задать X₁, Y₁.
             </div>
         </div>
 
     </div>
 
-    <!-- Подключаем ваш файл с реализацией -->
-    <script src="Algorithm of Bresenham.js"></script>
-
-    <!-- Скрипт страницы: использует функцию из подключённого файла -->
+    <script src="bresenham.js"></script>
     <script>
         const canvas = document.getElementById('scene');
         const ctx = canvas.getContext('2d');
 
+        // Вкладки
+        const tabLine = document.getElementById('tabLine');
+        const tabCircle = document.getElementById('tabCircle');
+        const formLine = document.getElementById('formLine');
+        const formCircle = document.getElementById('formCircle');
+        const hint = document.getElementById('hint');
+
+        // Поля отрезка
         const x0Input = document.getElementById('x0');
         const y0Input = document.getElementById('y0');
         const x1Input = document.getElementById('x1');
         const y1Input = document.getElementById('y1');
+
+        // Поля окружности
+        const cxInput = document.getElementById('cx');
+        const cyInput = document.getElementById('cy');
+        const radiusInput = document.getElementById('radius');
+
+        // Общие
         const colorInput = document.getElementById('color');
-        const showPixels = document.getElementById('showPixels');
         const showGrid = document.getElementById('showGrid');
         const showReference = document.getElementById('showReference');
         const stats = document.getElementById('stats');
@@ -260,14 +320,36 @@
         const drawBtn = document.getElementById('drawBtn');
         const clearBtn = document.getElementById('clearBtn');
 
-        // ---------- Вспомогательные функции ----------
+        let mode = 'line'; // 'line' | 'circle'
+
+        // Переключение вкладок
+
+        function setMode(newMode) {
+            mode = newMode;
+            if (mode === 'line') {
+                tabLine.classList.add('active');
+                tabCircle.classList.remove('active');
+                formLine.classList.remove('hidden');
+                formCircle.classList.add('hidden');
+                hint.textContent = 'Левый клик по холсту — задать X₁, Y₁.';
+            } else {
+                tabCircle.classList.add('active');
+                tabLine.classList.remove('active');
+                formCircle.classList.remove('hidden');
+                formLine.classList.add('hidden');
+                hint.textContent = 'Левый клик по холсту — задать центр. Правый — радиус.';
+            }
+            draw();
+        }
+
+        tabLine.addEventListener('click', () => setMode('line'));
+        tabCircle.addEventListener('click', () => setMode('circle'));
+
+        // Вспомогательные
 
         function clearCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            if (showGrid.checked) {
-                drawGrid();
-            }
+            if (showGrid.checked) drawGrid();
         }
 
         function drawGrid() {
@@ -289,47 +371,19 @@
             ctx.restore();
         }
 
-        /**
-         * Собираем все пиксели, которые должен закрасить алгоритм Брезенхема.
-         * Это дублирует логику, но нужно только для подсчёта статистики.
-         * Если в вашем файле функция возвращает массив пикселей — используйте его.
-         */
-        function collectBresenhamPixels(x0, y0, x1, y1) {
-            const pixels = [];
-            x0 = Math.round(x0); y0 = Math.round(y0);
-            x1 = Math.round(x1); y1 = Math.round(y1);
+        // Отрисовка
 
-            const dx = Math.abs(x1 - x0);
-            const dy = Math.abs(y1 - y0);
-            const sx = x0 < x1 ? 1 : -1;
-            const sy = y0 < y1 ? 1 : -1;
-            let err = dx - dy;
-
-            while (true) {
-                pixels.push([x0, y0]);
-                if (x0 === x1 && y0 === y1) break;
-                const e2 = 2 * err;
-                if (e2 > -dy) { err -= dy; x0 += sx; }
-                if (e2 <  dx) { err += dx; y0 += sy; }
-            }
-            return pixels;
-        }
-
-        // ---------- Отрисовка ----------
-
-        function draw() {
+        function drawLine() {
             const x0 = parseInt(x0Input.value, 10) || 0;
             const y0 = parseInt(y0Input.value, 10) || 0;
             const x1 = parseInt(x1Input.value, 10) || 0;
             const y1 = parseInt(y1Input.value, 10) || 0;
             const color = colorInput.value;
 
-            clearCanvas();
-
-            // Рисуем «идеальную» линию средствами canvas (для сравнения)
+            // Идеальная линия
             if (showReference.checked) {
                 ctx.save();
-                ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.12)';
                 ctx.lineWidth = 1;
                 ctx.beginPath();
                 ctx.moveTo(x0 + 0.5, y0 + 0.5);
@@ -338,89 +392,116 @@
                 ctx.restore();
             }
 
-            // === ВЫЗОВ ВАШЕЙ ФУНКЦИИ ИЗ ПОДКЛЮЧЁННОГО ФАЙЛА ===
-            // Ожидается, что в файле "Algorithm of Bresenham.js"
-            // объявлена функция bresenhamLine(ctx, x0, y0, x1, y1, color)
-            if (typeof bresenhamLine === 'function') {
-                bresenhamLine(ctx, x0, y0, x1, y1, color);
-            } else {
-                console.error(
-                    'Функция bresenhamLine не найдена. ' +
-                    'Проверьте имя функции в файле "Algorithm of Bresenham.js".'
-                );
-                // Запасной вариант — рисуем сами
-                ctx.fillStyle = color;
-                for (const [px, py] of collectBresenhamPixels(x0, y0, x1, y1)) {
-                    ctx.fillRect(px, py, 1, 1);
-                }
-            }
+            bresenhamLine(ctx, x0, y0, x1, y1, color);
 
-            // Подсветка отдельных пикселей (чтобы их было видно)
-            if (showPixels.checked) {
-                const pixels = collectBresenhamPixels(x0, y0, x1, y1);
-                ctx.save();
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
-                for (const [px, py] of pixels) {
-                    ctx.fillRect(px, py, 1, 1);
-                }
-                ctx.restore();
+            const pixels = bresenhamPixels(x0, y0, x1, y1);
 
-                stats.innerHTML =
-                    `<strong>Пикселей:</strong> ${pixels.length}<br>` +
-                    `<strong>Шагов:</strong> ${pixels.length - 1}`;
-            } else {
-                const pixels = collectBresenhamPixels(x0, y0, x1, y1);
-                stats.innerHTML =
-                    `<strong>Пикселей:</strong> ${pixels.length}<br>` +
-                    `<strong>Шагов:</strong> ${pixels.length - 1}`;
-            }
-
-            // Отмечаем начало и конец
+            // Отметки концов
             ctx.save();
-            // Начало — красный
             ctx.fillStyle = '#ef4444';
             ctx.beginPath();
             ctx.arc(x0 + 0.5, y0 + 0.5, 4, 0, Math.PI * 2);
             ctx.fill();
-            // Конец — зелёный
             ctx.fillStyle = '#10b981';
             ctx.beginPath();
             ctx.arc(x1 + 0.5, y1 + 0.5, 4, 0, Math.PI * 2);
             ctx.fill();
             ctx.restore();
+
+            stats.innerHTML =
+                `<strong>Режим:</strong> отрезок<br>` +
+                `<strong>Пикселей:</strong> ${pixels.length}<br>` +
+                `<strong>Шагов:</strong> ${pixels.length - 1}<br>` +
+                `<strong>Длина:</strong> ${Math.hypot(x1 - x0, y1 - y0).toFixed(1)} px`;
         }
 
-        // ---------- События ----------
+        function drawCircle() {
+            const cx = parseInt(cxInput.value, 10) || 0;
+            const cy = parseInt(cyInput.value, 10) || 0;
+            const r  = parseInt(radiusInput.value, 10) || 0;
+            const color = colorInput.value;
+
+            // Идеальная окружность
+            if (showReference.checked) {
+                ctx.save();
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.12)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(cx + 0.5, cy + 0.5, r, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            bresenhamCircle(ctx, cx, cy, r, color);
+
+            const pixels = bresenhamCirclePixels(cx, cy, r);
+
+            // Центр
+            ctx.save();
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(cx + 0.5, cy + 0.5, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            stats.innerHTML =
+                `<strong>Режим:</strong> окружность<br>` +
+                `<strong>Радиус:</strong> ${r} px<br>` +
+                `<strong>Пикселей:</strong> ${pixels.length}<br>` +
+                `<strong>Идеальная длина:</strong> ${(2 * Math.PI * r).toFixed(1)} px`;
+        }
+
+        function draw() {
+            clearCanvas();
+            if (mode === 'line') drawLine();
+            else drawCircle();
+        }
+
+        //  События 
 
         drawBtn.addEventListener('click', draw);
         clearBtn.addEventListener('click', () => {
             clearCanvas();
-            stats.innerHTML = '<strong>Пикселей:</strong> —<br><strong>Шагов:</strong> —';
+            stats.innerHTML = '<strong>Пикселей:</strong> —';
         });
 
-        [x0Input, y0Input, x1Input, y1Input, colorInput,
-         showPixels, showGrid, showReference].forEach(el => {
+        [x0Input, y0Input, x1Input, y1Input,
+         cxInput, cyInput, radiusInput,
+         colorInput, showGrid, showReference].forEach(el => {
             el.addEventListener('change', draw);
         });
 
-        // Клик по холсту — задаём конец отрезка
+        // Левый клик — конечная точка отрезка / центр окружности
         canvas.addEventListener('click', (e) => {
             const rect = canvas.getBoundingClientRect();
             const x = Math.round(e.clientX - rect.left);
             const y = Math.round(e.clientY - rect.top);
-            x1Input.value = x;
-            y1Input.value = y;
+
+            if (mode === 'line') {
+                x1Input.value = x;
+                y1Input.value = y;
+            } else {
+                cxInput.value = x;
+                cyInput.value = y;
+            }
             draw();
         });
 
-        // Клик с зажатым Shift — задаём начало отрезка
+        // Правый клик — начало отрезка / радиус
         canvas.addEventListener('contextmenu', (e) => {
             e.preventDefault();
             const rect = canvas.getBoundingClientRect();
             const x = Math.round(e.clientX - rect.left);
             const y = Math.round(e.clientY - rect.top);
-            x0Input.value = x;
-            y0Input.value = y;
+
+            if (mode === 'line') {
+                x0Input.value = x;
+                y0Input.value = y;
+            } else {
+                const cx = parseInt(cxInput.value, 10) || 0;
+                const cy = parseInt(cyInput.value, 10) || 0;
+                radiusInput.value = Math.round(Math.hypot(x - cx, y - cy));
+            }
             draw();
         });
 
