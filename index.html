@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Алгоритм Брезенхема — визуализация</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 24px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #1f2937;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-size: 22px;
+            margin: 0 0 4px;
+            color: #111827;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .layout {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .panel {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        }
+
+        .canvas-wrap {
+            position: relative;
+            line-height: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+        }
+
+        canvas#scene {
+            display: block;
+            background: #fff;
+            cursor: crosshair;
+        }
+
+        .controls {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .controls h2 {
+            font-size: 15px;
+            margin: 0 0 4px;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .field label {
+            font-size: 13px;
+            color: #4b5563;
+        }
+
+        .field input[type="number"],
+        .field input[type="color"] {
+            padding: 6px 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .field input[type="color"] {
+            height: 36px;
+            padding: 2px;
+            cursor: pointer;
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .row .field { flex: 1; }
+
+        .checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #4b5563;
+            cursor: pointer;
+        }
+
+        .checkbox input { cursor: pointer; }
+
+        button {
+            padding: 10px 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        button.primary {
+            background: #2563eb;
+            color: #fff;
+        }
+        button.primary:hover { background: #1d4ed8; }
+
+        button.secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        button.secondary:hover { background: #d1d5db; }
+
+        .hint {
+            font-size: 12px;
+            color: #9ca3af;
+            line-height: 1.4;
+            margin-top: 4px;
+        }
+
+        .info {
+            font-size: 12px;
+            color: #6b7280;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 8px 10px;
+            line-height: 1.5;
+        }
+
+        .info strong { color: #111827; }
+    </style>
+</head>
+<body>
+
+    <script src="bresenham.js"></script>
+
+    <h1>Алгоритм Брезенхема</h1>
+    <p class="subtitle">Кликните по холсту, чтобы задать конец отрезка. Начало — красная точка.</p>
+
+    <div class="layout">
+
+        <!-- Холст -->
+        <div class="panel canvas-wrap">
+            <canvas id="scene" width="600" height="600"></canvas>
+        </div>
+
+        <!-- Панель управления -->
+        <div class="panel controls">
+            <h2>Параметры</h2>
+
+            <div class="row">
+                <div class="field">
+                    <label for="x0">X₀</label>
+                    <input type="number" id="x0" value="50" min="0">
+                </div>
+                <div class="field">
+                    <label for="y0">Y₀</label>
+                    <input type="number" id="y0" value="50" min="0">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="field">
+                    <label for="x1">X₁</label>
+                    <input type="number" id="x1" value="550" min="0">
+                </div>
+                <div class="field">
+                    <label for="y1">Y₁</label>
+                    <input type="number" id="y1" value="400" min="0">
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="color">Цвет линии</label>
+                <input type="color" id="color" value="#2563eb">
+            </div>
+
+            <label class="checkbox">
+                <input type="checkbox" id="showPixels" checked>
+                Показывать отдельные пиксели
+            </label>
+
+            <label class="checkbox">
+                <input type="checkbox" id="showGrid">
+                Показывать сетку
+            </label>
+
+            <label class="checkbox">
+                <input type="checkbox" id="showReference" checked>
+                Показывать «идеальную» линию (canvas lineTo)
+            </label>
+
+            <div class="row">
+                <button class="primary" id="drawBtn" style="flex:1">Нарисовать</button>
+                <button class="secondary" id="clearBtn" style="flex:0 0 auto">Очистить</button>
+            </div>
+
+            <div class="info" id="stats">
+                <strong>Пикселей:</strong> —<br>
+                <strong>Шагов:</strong> —
+            </div>
+
+            <div class="hint">
+                Холст: 600×600 px. Координаты задаются в пикселях.
+                Клик по холсту задаёт конечную точку (X₁, Y₁).
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Подключаем ваш файл с реализацией -->
+    <script src="Algorithm of Bresenham.js"></script>
+
+    <!-- Скрипт страницы: использует функцию из подключённого файла -->
+    <script>
+        const canvas = document.getElementById('scene');
+        const ctx = canvas.getContext('2d');
+
+        const x0Input = document.getElementById('x0');
+        const y0Input = document.getElementById('y0');
+        const x1Input = document.getElementById('x1');
+        const y1Input = document.getElementById('y1');
+        const colorInput = document.getElementById('color');
+        const showPixels = document.getElementById('showPixels');
+        const showGrid = document.getElementById('showGrid');
+        const showReference = document.getElementById('showReference');
+        const stats = document.getElementById('stats');
+
+        const drawBtn = document.getElementById('drawBtn');
+        const clearBtn = document.getElementById('clearBtn');
+
+        // ---------- Вспомогательные функции ----------
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (showGrid.checked) {
+                drawGrid();
+            }
+        }
+
+        function drawGrid() {
+            ctx.save();
+            ctx.strokeStyle = '#eef1f5';
+            ctx.lineWidth = 1;
+            for (let x = 0; x <= canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x + 0.5, 0);
+                ctx.lineTo(x + 0.5, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y <= canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y + 0.5);
+                ctx.lineTo(canvas.width, y + 0.5);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        /**
+         * Собираем все пиксели, которые должен закрасить алгоритм Брезенхема.
+         * Это дублирует логику, но нужно только для подсчёта статистики.
+         * Если в вашем файле функция возвращает массив пикселей — используйте его.
+         */
+        function collectBresenhamPixels(x0, y0, x1, y1) {
+            const pixels = [];
+            x0 = Math.round(x0); y0 = Math.round(y0);
+            x1 = Math.round(x1); y1 = Math.round(y1);
+
+            const dx = Math.abs(x1 - x0);
+            const dy = Math.abs(y1 - y0);
+            const sx = x0 < x1 ? 1 : -1;
+            const sy = y0 < y1 ? 1 : -1;
+            let err = dx - dy;
+
+            while (true) {
+                pixels.push([x0, y0]);
+                if (x0 === x1 && y0 === y1) break;
+                const e2 = 2 * err;
+                if (e2 > -dy) { err -= dy; x0 += sx; }
+                if (e2 <  dx) { err += dx; y0 += sy; }
+            }
+            return pixels;
+        }
+
+        // ---------- Отрисовка ----------
+
+        function draw() {
+            const x0 = parseInt(x0Input.value, 10) || 0;
+            const y0 = parseInt(y0Input.value, 10) || 0;
+            const x1 = parseInt(x1Input.value, 10) || 0;
+            const y1 = parseInt(y1Input.value, 10) || 0;
+            const color = colorInput.value;
+
+            clearCanvas();
+
+            // Рисуем «идеальную» линию средствами canvas (для сравнения)
+            if (showReference.checked) {
+                ctx.save();
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(x0 + 0.5, y0 + 0.5);
+                ctx.lineTo(x1 + 0.5, y1 + 0.5);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // === ВЫЗОВ ВАШЕЙ ФУНКЦИИ ИЗ ПОДКЛЮЧЁННОГО ФАЙЛА ===
+            // Ожидается, что в файле "Algorithm of Bresenham.js"
+            // объявлена функция bresenhamLine(ctx, x0, y0, x1, y1, color)
+            if (typeof bresenhamLine === 'function') {
+                bresenhamLine(ctx, x0, y0, x1, y1, color);
+            } else {
+                console.error(
+                    'Функция bresenhamLine не найдена. ' +
+                    'Проверьте имя функции в файле "Algorithm of Bresenham.js".'
+                );
+                // Запасной вариант — рисуем сами
+                ctx.fillStyle = color;
+                for (const [px, py] of collectBresenhamPixels(x0, y0, x1, y1)) {
+                    ctx.fillRect(px, py, 1, 1);
+                }
+            }
+
+            // Подсветка отдельных пикселей (чтобы их было видно)
+            if (showPixels.checked) {
+                const pixels = collectBresenhamPixels(x0, y0, x1, y1);
+                ctx.save();
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+                for (const [px, py] of pixels) {
+                    ctx.fillRect(px, py, 1, 1);
+                }
+                ctx.restore();
+
+                stats.innerHTML =
+                    `<strong>Пикселей:</strong> ${pixels.length}<br>` +
+                    `<strong>Шагов:</strong> ${pixels.length - 1}`;
+            } else {
+                const pixels = collectBresenhamPixels(x0, y0, x1, y1);
+                stats.innerHTML =
+                    `<strong>Пикселей:</strong> ${pixels.length}<br>` +
+                    `<strong>Шагов:</strong> ${pixels.length - 1}`;
+            }
+
+            // Отмечаем начало и конец
+            ctx.save();
+            // Начало — красный
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(x0 + 0.5, y0 + 0.5, 4, 0, Math.PI * 2);
+            ctx.fill();
+            // Конец — зелёный
+            ctx.fillStyle = '#10b981';
+            ctx.beginPath();
+            ctx.arc(x1 + 0.5, y1 + 0.5, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // ---------- События ----------
+
+        drawBtn.addEventListener('click', draw);
+        clearBtn.addEventListener('click', () => {
+            clearCanvas();
+            stats.innerHTML = '<strong>Пикселей:</strong> —<br><strong>Шагов:</strong> —';
+        });
+
+        [x0Input, y0Input, x1Input, y1Input, colorInput,
+         showPixels, showGrid, showReference].forEach(el => {
+            el.addEventListener('change', draw);
+        });
+
+        // Клик по холсту — задаём конец отрезка
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.round(e.clientX - rect.left);
+            const y = Math.round(e.clientY - rect.top);
+            x1Input.value = x;
+            y1Input.value = y;
+            draw();
+        });
+
+        // Клик с зажатым Shift — задаём начало отрезка
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.round(e.clientX - rect.left);
+            const y = Math.round(e.clientY - rect.top);
+            x0Input.value = x;
+            y0Input.value = y;
+            draw();
+        });
+
+        // Первая отрисовка
+        draw();
+    </script>
+
+</body>
+</html>
