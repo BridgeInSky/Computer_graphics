@@ -1,513 +1,201 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Алгоритм Брезенхема — визуализация</title>
-    <style>
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            padding: 24px;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #f5f7fa;
-            color: #1f2937;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        h1 {
-            font-size: 22px;
-            margin: 0 0 4px;
-            color: #111827;
-        }
-
-        .subtitle {
-            color: #6b7280;
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-
-        .layout {
-            display: flex;
-            gap: 24px;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: flex-start;
-        }
-
-        .panel {
-            background: #fff;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-        }
-
-        .canvas-wrap {
-            position: relative;
-            line-height: 0;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid #e5e7eb;
-        }
-
-        canvas#scene {
-            display: block;
-            background: #fff;
-            cursor: crosshair;
-        }
-
-        .controls {
-            width: 300px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .controls h2 {
-            font-size: 15px;
-            margin: 0 0 4px;
-            color: #374151;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 4px;
-            background: #f3f4f6;
-            border-radius: 8px;
-            padding: 4px;
-        }
-
-        .tabs button {
-            flex: 1;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 6px;
-            background: transparent;
-            font-size: 14px;
-            font-weight: 500;
-            color: #4b5563;
-            cursor: pointer;
-            transition: background 0.15s, color 0.15s;
-        }
-
-        .tabs button.active {
-            background: #fff;
-            color: #111827;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-        }
-
-        .field {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .field label {
-            font-size: 13px;
-            color: #4b5563;
-        }
-
-        .field input[type="number"],
-        .field input[type="color"] {
-            padding: 6px 8px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 14px;
-            width: 100%;
-        }
-
-        .field input[type="color"] {
-            height: 36px;
-            padding: 2px;
-            cursor: pointer;
-        }
-
-        .row {
-            display: flex;
-            gap: 8px;
-        }
-
-        .row .field { flex: 1; }
-
-        .checkbox {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: #4b5563;
-            cursor: pointer;
-        }
-
-        .checkbox input { cursor: pointer; }
-
-        button {
-            padding: 10px 14px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.15s;
-        }
-
-        button.primary {
-            background: #2563eb;
-            color: #fff;
-        }
-        button.primary:hover { background: #1d4ed8; }
-
-        button.secondary {
-            background: #e5e7eb;
-            color: #374151;
-        }
-        button.secondary:hover { background: #d1d5db; }
-
-        .hint {
-            font-size: 12px;
-            color: #9ca3af;
-            line-height: 1.4;
-            margin-top: 4px;
-        }
-
-        .info {
-            font-size: 12px;
-            color: #6b7280;
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            padding: 8px 10px;
-            line-height: 1.5;
-        }
-
-        .info strong { color: #111827; }
-
-        .hidden { display: none; }
-    </style>
+<meta charset="UTF-8">
+<title>Компьютерная графика — интерактивно</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    background: #111; color: #eee;
+    font-family: system-ui, sans-serif;
+    padding: 20px; margin: 0;
+  }
+  h1 { text-align: center; margin-bottom: 4px; }
+  .subtitle { text-align: center; color: #888; margin-bottom: 16px; }
+  .toolbar {
+    text-align: center; margin-bottom: 20px;
+  }
+  .toolbar button {
+    background: #2a6; color: #fff; border: none;
+    padding: 10px 20px; border-radius: 6px;
+    font-size: 15px; cursor: pointer;
+  }
+  .toolbar button:hover { background: #3c8; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+    gap: 20px;
+    max-width: 1500px;
+    margin: 0 auto;
+  }
+  .card {
+    background: #1a1a1a; padding: 12px;
+    border-radius: 8px; border: 1px solid #333;
+  }
+  .card h2 {
+    margin: 0 0 8px 0; font-size: 15px;
+    color: #9cf; font-weight: 600;
+  }
+  canvas {
+    border: 1px solid #444; image-rendering: pixelated;
+    display: block; background: #000;
+    width: 100%; height: auto;
+  }
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-top: 8px; align-items: center;
+  }
+  .controls label {
+    font-size: 12px; color: #aaa;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .controls input[type="number"] {
+    width: 60px; background: #222; color: #eee;
+    border: 1px solid #444; border-radius: 4px;
+    padding: 2px 4px; font-size: 12px;
+  }
+  .controls input[type="text"] {
+    width: 100px; background: #222; color: #eee;
+    border: 1px solid #444; border-radius: 4px;
+    padding: 2px 4px; font-size: 12px;
+  }
+  .controls button {
+    background: #2a6; color: #fff; border: none;
+    padding: 4px 10px; border-radius: 4px;
+    font-size: 12px; cursor: pointer;
+  }
+  .controls button:hover { background: #3c8; }
+</style>
 </head>
 <body>
+  <h1>Компьютерная графика — интерактивно</h1>
+  <div class="subtitle">Меняйте параметры и нажимайте «Перерисовать» в нужной карточке</div>
 
-    <h1>Алгоритм Брезенхема</h1>
-    <p class="subtitle">
-        Переключайтесь между отрезком и окружностью. Клик по холсту задаёт конечную точку / радиус.
-    </p>
+  <div class="toolbar">
+    <button id="redraw-all">Перерисовать всё</button>
+  </div>
 
-    <div class="layout">
+  <div class="grid">
 
-        <!-- Холст -->
-        <div class="panel canvas-wrap">
-            <canvas id="scene" width="600" height="600"></canvas>
-        </div>
-
-        <!-- Панель управления -->
-        <div class="panel controls">
-
-            <!-- Вкладки -->
-            <div class="tabs">
-                <button id="tabLine" class="active">Отрезок</button>
-                <button id="tabCircle">Окружность</button>
-            </div>
-
-            <!-- Форма отрезка -->
-            <div id="formLine">
-                <h2>Отрезок</h2>
-                <div class="row">
-                    <div class="field">
-                        <label for="x0">X₀</label>
-                        <input type="number" id="x0" value="80" min="0">
-                    </div>
-                    <div class="field">
-                        <label for="y0">Y₀</label>
-                        <input type="number" id="y0" value="80" min="0">
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="field">
-                        <label for="x1">X₁</label>
-                        <input type="number" id="x1" value="520" min="0">
-                    </div>
-                    <div class="field">
-                        <label for="y1">Y₁</label>
-                        <input type="number" id="y1" value="480" min="0">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Форма окружности -->
-            <div id="formCircle" class="hidden">
-                <h2>Окружность</h2>
-                <div class="row">
-                    <div class="field">
-                        <label for="cx">X центра</label>
-                        <input type="number" id="cx" value="300" min="0">
-                    </div>
-                    <div class="field">
-                        <label for="cy">Y центра</label>
-                        <input type="number" id="cy" value="300" min="0">
-                    </div>
-                </div>
-                <div class="field">
-                    <label for="radius">Радиус</label>
-                    <input type="number" id="radius" value="200" min="0">
-                </div>
-            </div>
-
-            <div class="field">
-                <label for="color">Цвет</label>
-                <input type="color" id="color" value="#2563eb">
-            </div>
-
-            <label class="checkbox">
-                <input type="checkbox" id="showGrid">
-                Показывать сетку
-            </label>
-
-            <label class="checkbox">
-                <input type="checkbox" id="showReference" checked>
-                Показывать «идеальную» фигуру (canvas)
-            </label>
-
-            <div class="row">
-                <button class="primary" id="drawBtn" style="flex:1">Нарисовать</button>
-                <button class="secondary" id="clearBtn" style="flex:0 0 auto">Очистить</button>
-            </div>
-
-            <div class="info" id="stats">
-                <strong>Пикселей:</strong> —
-            </div>
-
-            <div class="hint" id="hint">
-                Левый клик по холсту — задать X₁, Y₁.
-            </div>
-        </div>
-
+    <div class="card">
+      <h2>1. Отрезки (Брезенхейм)</h2>
+      <canvas id="c1" width="400" height="300"></canvas>
+      <div class="controls">
+        <label>cx <input type="number" id="line-cx" value="200"></label>
+        <label>cy <input type="number" id="line-cy" value="150"></label>
+        <label>шаг° <input type="number" id="line-step" value="22.5" step="1"></label>
+        <label>длина <input type="number" id="line-len" value="150"></label>
+        <label>цвет <input type="text" id="line-color" value="white"></label>
+        <button data-redraw="drawLines">Перерисовать</button>
+      </div>
     </div>
 
-    <script src="bresenham.js"></script>
-    <script>
-        const canvas = document.getElementById('scene');
-        const ctx = canvas.getContext('2d');
+    <div class="card">
+      <h2>2. Окружность (Брезенхейм)</h2>
+      <canvas id="c2" width="400" height="300"></canvas>
+      <div class="controls">
+        <label>cx <input type="number" id="circle-cx" value="200"></label>
+        <label>cy <input type="number" id="circle-cy" value="150"></label>
+        <label>R <input type="number" id="circle-r" value="100"></label>
+        <label>цвет <input type="text" id="circle-color" value="coral"></label>
+        <button data-redraw="drawCircle">Перерисовать</button>
+      </div>
+    </div>
 
-        // Вкладки
-        const tabLine = document.getElementById('tabLine');
-        const tabCircle = document.getElementById('tabCircle');
-        const formLine = document.getElementById('formLine');
-        const formCircle = document.getElementById('formCircle');
-        const hint = document.getElementById('hint');
+    <div class="card">
+      <h2>3. Многоугольник (poly)</h2>
+      <canvas id="c3" width="400" height="300"></canvas>
+      <div class="controls">
+        <label>цвет <input type="text" id="poly-color" value="coral"></label>
+        <button data-redraw="drawPoly">Перерисовать</button>
+      </div>
+    </div>
 
-        // Поля отрезка
-        const x0Input = document.getElementById('x0');
-        const y0Input = document.getElementById('y0');
-        const x1Input = document.getElementById('x1');
-        const y1Input = document.getElementById('y1');
+    <div class="card">
+      <h2>4. Отсечение отрезков (Кирус–Бек)</h2>
+      <canvas id="c4" width="400" height="300"></canvas>
+      <div class="controls">
+        <label>A1 <input type="number" id="cut-xa1" value="150"></label>
+        <label>B1 <input type="number" id="cut-ya1" value="20"></label>
+        <label>C1 <input type="number" id="cut-xb1" value="250"></label>
+        <label>D1 <input type="number" id="cut-yb1" value="20"></label>
+      </div>
+      <div class="controls">
+        <label>A2 <input type="number" id="cut-xa2" value="180"></label>
+        <label>B2 <input type="number" id="cut-ya2" value="150"></label>
+        <label>C2 <input type="number" id="cut-xb2" value="220"></label>
+        <label>D2 <input type="number" id="cut-yb2" value="180"></label>
+      </div>
+      <div class="controls">
+        <label>A3 <input type="number" id="cut-xa3" value="20"></label>
+        <label>B3 <input type="number" id="cut-ya3" value="180"></label>
+        <label>C3 <input type="number" id="cut-xb3" value="380"></label>
+        <label>D3 <input type="number" id="cut-yb3" value="180"></label>
+      </div>
+      <div class="controls">
+        <label>A4 <input type="number" id="cut-xa4" value="20"></label>
+        <label>B4 <input type="number" id="cut-ya4" value="180"></label>
+        <label>C4 <input type="number" id="cut-xb4" value="200"></label>
+        <label>D4 <input type="number" id="cut-yb4" value="160"></label>
+      </div>
+      <div class="controls">
+        <label>A5 <input type="number" id="cut-xa5" value="200"></label>
+        <label>B5 <input type="number" id="cut-ya5" value="160"></label>
+        <label>C5 <input type="number" id="cut-xb5" value="380"></label>
+        <label>D5 <input type="number" id="cut-yb5" value="180"></label>
+        <button data-redraw="drawCut">Перерисовать</button>
+      </div>
+    </div>
 
-        // Поля окружности
-        const cxInput = document.getElementById('cx');
-        const cyInput = document.getElementById('cy');
-        const radiusInput = document.getElementById('radius');
+    <div class="card">
+      <h2>5. Заливка с затравкой (flood fill)</h2>
+      <canvas id="c5" width="400" height="300"></canvas>
+      <div class="controls">
+        <label>cx <input type="number" id="flood-cx" value="200"></label>
+        <label>cy <input type="number" id="flood-cy" value="150"></label>
+        <label>R <input type="number" id="flood-r" value="100"></label>
+        <label>затравка X <input type="number" id="flood-sx" value="200"></label>
+        <label>затравка Y <input type="number" id="flood-sy" value="150"></label>
+      </div>
+      <div class="controls">
+        <label>граница <input type="text" id="flood-border" value="coral"></label>
+        <label>заливка <input type="text" id="flood-fill" value="darkseagreen"></label>
+        <button data-redraw="drawFlood">Перерисовать</button>
+      </div>
+    </div>
 
-        // Общие
-        const colorInput = document.getElementById('color');
-        const showGrid = document.getElementById('showGrid');
-        const showReference = document.getElementById('showReference');
-        const stats = document.getElementById('stats');
+    <div class="card">
+      <h2>6. Построчная заливка (scanline)</h2>
+      <canvas id="c6" width="400" height="300"></canvas>
+      <div class="controls">
+        <label>заливка <input type="text" id="scan-fill" value="darkseagreen"></label>
+        <label>обводка <input type="text" id="scan-stroke" value="coral"></label>
+        <button data-redraw="drawScanline">Перерисовать</button>
+      </div>
+    </div>
 
-        const drawBtn = document.getElementById('drawBtn');
-        const clearBtn = document.getElementById('clearBtn');
+    <div class="card">
+      <h2>7. «Звезда» из центра</h2>
+      <canvas id="c7" width="400" height="300"></canvas>
+      <div class="controls">
+        <label>cx <input type="number" id="star-cx" value="200"></label>
+        <label>cy <input type="number" id="star-cy" value="150"></label>
+        <label>лучей <input type="number" id="star-rays" value="16"></label>
+        <label>R <input type="number" id="star-r" value="150"></label>
+        <button data-redraw="drawStar">Перерисовать</button>
+      </div>
+    </div>
 
-        let mode = 'line'; // 'line' | 'circle'
+    <div class="card">
+      <h2>8. Композиция</h2>
+      <canvas id="c8" width="400" height="300"></canvas>
+      <div class="controls">
+        <button data-redraw="drawComposition">Перерисовать</button>
+      </div>
+    </div>
 
-        // Переключение вкладок
+  </div>
 
-        function setMode(newMode) {
-            mode = newMode;
-            if (mode === 'line') {
-                tabLine.classList.add('active');
-                tabCircle.classList.remove('active');
-                formLine.classList.remove('hidden');
-                formCircle.classList.add('hidden');
-                hint.textContent = 'Левый клик по холсту — задать X₁, Y₁.';
-            } else {
-                tabCircle.classList.add('active');
-                tabLine.classList.remove('active');
-                formCircle.classList.remove('hidden');
-                formLine.classList.add('hidden');
-                hint.textContent = 'Левый клик по холсту — задать центр. Правый — радиус.';
-            }
-            draw();
-        }
-
-        tabLine.addEventListener('click', () => setMode('line'));
-        tabCircle.addEventListener('click', () => setMode('circle'));
-
-        // Вспомогательные
-
-        function clearCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (showGrid.checked) drawGrid();
-        }
-
-        function drawGrid() {
-            ctx.save();
-            ctx.strokeStyle = '#eef1f5';
-            ctx.lineWidth = 1;
-            for (let x = 0; x <= canvas.width; x += 50) {
-                ctx.beginPath();
-                ctx.moveTo(x + 0.5, 0);
-                ctx.lineTo(x + 0.5, canvas.height);
-                ctx.stroke();
-            }
-            for (let y = 0; y <= canvas.height; y += 50) {
-                ctx.beginPath();
-                ctx.moveTo(0, y + 0.5);
-                ctx.lineTo(canvas.width, y + 0.5);
-                ctx.stroke();
-            }
-            ctx.restore();
-        }
-
-        // Отрисовка
-
-        function drawLine() {
-            const x0 = parseInt(x0Input.value, 10) || 0;
-            const y0 = parseInt(y0Input.value, 10) || 0;
-            const x1 = parseInt(x1Input.value, 10) || 0;
-            const y1 = parseInt(y1Input.value, 10) || 0;
-            const color = colorInput.value;
-
-            // Идеальная линия
-            if (showReference.checked) {
-                ctx.save();
-                ctx.strokeStyle = 'rgba(0, 0, 0, 0.12)';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(x0 + 0.5, y0 + 0.5);
-                ctx.lineTo(x1 + 0.5, y1 + 0.5);
-                ctx.stroke();
-                ctx.restore();
-            }
-
-            bresenhamLine(ctx, x0, y0, x1, y1, color);
-
-            const pixels = bresenhamPixels(x0, y0, x1, y1);
-
-            // Отметки концов
-            ctx.save();
-            ctx.fillStyle = '#ef4444';
-            ctx.beginPath();
-            ctx.arc(x0 + 0.5, y0 + 0.5, 4, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#10b981';
-            ctx.beginPath();
-            ctx.arc(x1 + 0.5, y1 + 0.5, 4, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
-
-            stats.innerHTML =
-                `<strong>Режим:</strong> отрезок<br>` +
-                `<strong>Пикселей:</strong> ${pixels.length}<br>` +
-                `<strong>Шагов:</strong> ${pixels.length - 1}<br>` +
-                `<strong>Длина:</strong> ${Math.hypot(x1 - x0, y1 - y0).toFixed(1)} px`;
-        }
-
-        function drawCircle() {
-            const cx = parseInt(cxInput.value, 10) || 0;
-            const cy = parseInt(cyInput.value, 10) || 0;
-            const r  = parseInt(radiusInput.value, 10) || 0;
-            const color = colorInput.value;
-
-            // Идеальная окружность
-            if (showReference.checked) {
-                ctx.save();
-                ctx.strokeStyle = 'rgba(0, 0, 0, 0.12)';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.arc(cx + 0.5, cy + 0.5, r, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.restore();
-            }
-
-            bresenhamCircle(ctx, cx, cy, r, color);
-
-            const pixels = bresenhamCirclePixels(cx, cy, r);
-
-            // Центр
-            ctx.save();
-            ctx.fillStyle = '#ef4444';
-            ctx.beginPath();
-            ctx.arc(cx + 0.5, cy + 0.5, 3, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
-
-            stats.innerHTML =
-                `<strong>Режим:</strong> окружность<br>` +
-                `<strong>Радиус:</strong> ${r} px<br>` +
-                `<strong>Пикселей:</strong> ${pixels.length}<br>` +
-                `<strong>Идеальная длина:</strong> ${(2 * Math.PI * r).toFixed(1)} px`;
-        }
-
-        function draw() {
-            clearCanvas();
-            if (mode === 'line') drawLine();
-            else drawCircle();
-        }
-
-        //  События 
-
-        drawBtn.addEventListener('click', draw);
-        clearBtn.addEventListener('click', () => {
-            clearCanvas();
-            stats.innerHTML = '<strong>Пикселей:</strong> —';
-        });
-
-        [x0Input, y0Input, x1Input, y1Input,
-         cxInput, cyInput, radiusInput,
-         colorInput, showGrid, showReference].forEach(el => {
-            el.addEventListener('change', draw);
-        });
-
-        // Левый клик — конечная точка отрезка / центр окружности
-        canvas.addEventListener('click', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = Math.round(e.clientX - rect.left);
-            const y = Math.round(e.clientY - rect.top);
-
-            if (mode === 'line') {
-                x1Input.value = x;
-                y1Input.value = y;
-            } else {
-                cxInput.value = x;
-                cyInput.value = y;
-            }
-            draw();
-        });
-
-        // Правый клик — начало отрезка / радиус
-        canvas.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            const rect = canvas.getBoundingClientRect();
-            const x = Math.round(e.clientX - rect.left);
-            const y = Math.round(e.clientY - rect.top);
-
-            if (mode === 'line') {
-                x0Input.value = x;
-                y0Input.value = y;
-            } else {
-                const cx = parseInt(cxInput.value, 10) || 0;
-                const cy = parseInt(cyInput.value, 10) || 0;
-                radiusInput.value = Math.round(Math.hypot(x - cx, y - cy));
-            }
-            draw();
-        });
-
-        // Первая отрисовка
-        draw();
-    </script>
-
+  <script src="bresenham.js"></script>
 </body>
 </html>
